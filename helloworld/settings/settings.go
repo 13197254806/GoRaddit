@@ -9,11 +9,14 @@ import (
 )
 
 type Config struct {
-	Name          string `mapstructure:"name"`
-	Port          int    `mapstructure:"port"`
-	Version       string `mapstructure:"version"`
-	StartTime     string `mapstructure:"start_time"`
-	MachineID     int    `mapstructure:"machine_id"`
+	Name             string `mapstructure:"name"`
+	Port             int    `mapstructure:"port"`
+	Version          string `mapstructure:"version"`
+	StartTime        string `mapstructure:"start_time"`
+	MachineID        int    `mapstructure:"machine_id"`
+	Mode             string `mapstructure:"mode"`
+	TranslatorLocale string `mapstructure:"translator_locale"`
+
 	*LoggerConfig `mapstructure:"logger"`
 	*MysqlConfig  `mapstructure:"mysql"`
 	*RedisConfig  `mapstructure:"redis"`

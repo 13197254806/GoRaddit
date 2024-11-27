@@ -3,7 +3,8 @@ port: 8080
 version: "1.0.0"
 start_time: "2024-11-26"
 machine_id: 1
-
+mode: "dev"
+translator_locale: "zh"
 
 logger:
   log_file: "./test.log"

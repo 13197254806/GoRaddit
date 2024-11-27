@@ -9,7 +9,14 @@ import (
 	"test.com/helloworld/logger"
 )
 
-func SetUp() (r *gin.Engine) {
+func SetUp(mode string) (r *gin.Engine) {
+	if mode == gin.DebugMode {
+		gin.SetMode(gin.DebugMode)
+	} else if mode == gin.ReleaseMode {
+		gin.SetMode(gin.ReleaseMode)
+	} else if mode == gin.TestMode {
+		gin.SetMode(gin.TestMode)
+	}
 	r = gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	{

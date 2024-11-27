@@ -1,11 +1,8 @@
 package controller
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
-
-	"github.com/jinzhu/gorm"
-
 	"test.com/helloworld/service"
 
 	"github.com/go-playground/validator/v10"
@@ -16,30 +13,25 @@ import (
 )
 
 func UserSignUpHandler(c *gin.Context) {
-	var params models.ParamSignIn
+	var params models.ParamSignUp
 	if err := c.ShouldBindJSON(&params); err != nil {
-		zap.L().Error("signup with invalid params: %v", zap.Error(err))
-		if _, ok := err.(validator.ValidationErrors); !ok {
+		//zap.L().Error("signup with invalid params: %v", zap.Error(err))
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
 			c.JSON(http.StatusOK, gin.H{
 				"msg": err.Error(),
 			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"msg": "请求参数有误",
+			"msg": removeTopStruct(errs.Translate(trans)),
 		})
 		return
 	}
 	if err := service.UserSignUp(&params); err != nil {
-		zap.L().Error("failed in user signup: %v", zap.Error(err))
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusOK, gin.H{
-				"msg": "用户已经存在",
-			})
-			return
-		}
+		zap.L().Error("failed in user signup: ", zap.Error(err))
 		c.JSON(http.StatusOK, gin.H{
-			"msg": err.Error(),
+			"msg": fmt.Sprintf("注册失败：%s", err.Error()),
 		})
 		return
 	}

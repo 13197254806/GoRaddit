@@ -33,7 +33,7 @@ func getLogEncoder() zapcore.Encoder {
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
-func Init(loggerConfig *settings.LoggerConfig) (err error) {
+func Init(loggerConfig *settings.LoggerConfig, mode string) (err error) {
 	logWritter := getLogWritter(
 		loggerConfig.LogFile,
 		loggerConfig.MaxSize,
@@ -43,7 +43,18 @@ func Init(loggerConfig *settings.LoggerConfig) (err error) {
 	if err := level.UnmarshalText([]byte(loggerConfig.Level)); err != nil {
 		fmt.Println("fail to set logger level: %v", err)
 	}
-	core := zapcore.NewCore(logEncoder, logWritter, level)
+	var core zapcore.Core
+	if mode == "dev" {
+		// 开发者模式
+		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+		consoleWritter := zapcore.Lock(os.Stdout)
+		core = zapcore.NewTee(
+			zapcore.NewCore(logEncoder, logWritter, level),
+			zapcore.NewCore(consoleEncoder, consoleWritter, level),
+		)
+	} else {
+		core = zapcore.NewCore(logEncoder, logWritter, level)
+	}
 	lg := zap.New(core, zap.AddCaller())
 	zap.ReplaceGlobals(lg)
 	return

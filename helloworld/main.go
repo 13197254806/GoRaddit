@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"test.com/helloworld/controller"
 	"time"
 
 	"go.uber.org/zap"
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	// Init Zap
-	if err := logger.Init(settings.Conf.LoggerConfig); err != nil {
+	if err := logger.Init(settings.Conf.LoggerConfig, settings.Conf.Mode); err != nil {
 		fmt.Println(err)
 	}
 	//fmt.Printf("%#v", settings.Conf)
@@ -56,8 +57,13 @@ func main() {
 	//testID := snowflake.GenerateID()
 	//fmt.Println(testID)
 
+	// Init Validation Translator
+	if err := controller.InitTrans(settings.Conf.TranslatorLocale); err != nil {
+		fmt.Println(err)
+	}
+
 	// register routes
-	r := routes.SetUp()
+	r := routes.SetUp(settings.Conf.Mode)
 
 	// smoothing turn-off
 	srv := &http.Server{

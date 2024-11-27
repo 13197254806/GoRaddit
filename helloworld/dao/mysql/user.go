@@ -1,16 +1,19 @@
 package mysql
 
 import (
-	"gorm.io/gorm"
+	"errors"
 )
 
 type User struct {
-	gorm.Model
-	UserID   int64 `gorm:"column: user_id"`
+	//gorm.Model
+	ID uint `gorm:"primarykey"`
+
+	//UserID int64
+	UserId   int64
 	Username string
 	Password string
 	Email    string
-	Gender   string
+	Gender   int8
 }
 
 func (User) TableName() string {
@@ -18,15 +21,22 @@ func (User) TableName() string {
 }
 
 func IsUserNameExisted(userName string) (err error) {
-	return db.Model(&User{}).Where("username = ?", userName).Error
+	var count int64
+	dbErr := db.Model(&User{}).Where("username = ?", userName).Count(&count).Error
+	if count > 0 {
+		err = errors.New("该用户已存在")
+	} else if dbErr != nil {
+		err = dbErr
+	}
+	return
 }
 
 func InsertUser(userInfo map[string]interface{}) (err error) {
-	//return db.Model(&User{}).Create(userInfo).Error
 	newUser := User{
-		UserID:   userInfo["userID"].(int64),
+		UserId:   userInfo["UserId"].(int64),
 		Username: userInfo["Username"].(string),
 		Password: userInfo["Password"].(string),
 	}
+	//fmt.Println("%v", newUser)
 	return db.Create(&newUser).Error
 }
