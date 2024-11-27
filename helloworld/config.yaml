@@ -1,0 +1,26 @@
+name: "go-raddit"
+port: 8080
+version: "1.0.0"
+start_time: "2024-11-26"
+machine_id: 1
+
+
+logger:
+  log_file: "./test.log"
+  max_size: 100
+  max_age: 3
+  level: "debug"
+
+mysql:
+  username: "root"
+  host: "124.223.63.202"
+  port: 3306
+  db_name: "go_proj1"
+  password: "sct00123."
+
+redis:
+  host: "124.223.63.202"
+  port: 6379
+  password: "sct00123."
+  db: 0
+  pool_size: 30
