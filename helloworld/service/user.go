@@ -16,16 +16,23 @@ func encryptPassword(password string) string {
 	return hex.EncodeToString(h.Sum([]byte(password)))
 }
 
-func UserSignUp(paramSignIn *models.ParamSignUp) (err error) {
-	err = mysql.IsUserNameExisted(paramSignIn.Username)
+func UserSignUp(paramSignUp *models.ParamSignUp) (err error) {
+	err = mysql.IsUserNameExisted(paramSignUp.Username)
 	if err != nil {
 		return
 	}
 
 	err = mysql.InsertUser(map[string]interface{}{
 		"UserId":   snowflake.GenerateID(),
-		"Username": paramSignIn.Username,
-		"Password": encryptPassword(paramSignIn.Password),
+		"Username": paramSignUp.Username,
+		"Password": encryptPassword(paramSignUp.Password),
 	})
 	return
+}
+
+func UserSignIn(paramSignIn *models.ParamSignIn) (err error) {
+	err = mysql.IsUserExisted(
+		paramSignIn.Username,
+		encryptPassword(paramSignIn.Password))
+	return err
 }

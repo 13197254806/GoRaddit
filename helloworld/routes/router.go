@@ -24,6 +24,7 @@ func SetUp(mode string) (r *gin.Engine) {
 			c.String(http.StatusOK, "hello world")
 		})
 		r.POST("/signup", controller.UserSignUpHandler)
+		r.POST("/signin", controller.UserSignInHandler)
 	}
 	return
 }

@@ -4,6 +4,12 @@ import (
 	"errors"
 )
 
+var (
+	ErrorUserExist       = errors.New("用户已存在")
+	ErrorInvalidPassword = errors.New("用户名或密码错误")
+	ErrorMysql           = errors.New("数据库错误")
+)
+
 type User struct {
 	//gorm.Model
 	ID uint `gorm:"primarykey"`
@@ -24,9 +30,20 @@ func IsUserNameExisted(userName string) (err error) {
 	var count int64
 	dbErr := db.Model(&User{}).Where("username = ?", userName).Count(&count).Error
 	if count > 0 {
-		err = errors.New("该用户已存在")
+		err = ErrorUserExist
 	} else if dbErr != nil {
-		err = dbErr
+		err = ErrorMysql
+	}
+	return err
+}
+
+func IsUserExisted(userName string, passWord string) (err error) {
+	var count int64
+	dbErr := db.Model(&User{}).Where("username = ? and password = ?", userName, passWord).Count(&count).Error
+	if dbErr != nil {
+		err = ErrorMysql
+	} else if count == 0 {
+		err = ErrorInvalidPassword
 	}
 	return
 }
@@ -37,6 +54,8 @@ func InsertUser(userInfo map[string]interface{}) (err error) {
 		Username: userInfo["Username"].(string),
 		Password: userInfo["Password"].(string),
 	}
-	//fmt.Println("%v", newUser)
-	return db.Create(&newUser).Error
+	if dbErr := db.Create(&newUser).Error; dbErr != nil {
+		err = ErrorMysql
+	}
+	return
 }
