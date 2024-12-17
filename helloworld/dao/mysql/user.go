@@ -2,19 +2,19 @@ package mysql
 
 import (
 	"errors"
+	"github.com/jinzhu/gorm"
 )
 
 var (
-	ErrorUserExist       = errors.New("用户已存在")
-	ErrorInvalidPassword = errors.New("用户名或密码错误")
-	ErrorMysql           = errors.New("数据库错误")
+	ErrorUserExist   = errors.New("用户已存在")
+	ErrorInvalidUser = errors.New("用户名或密码错误")
+	ErrorMysql       = errors.New("数据库错误")
 )
 
 type User struct {
 	//gorm.Model
 	ID uint `gorm:"primarykey"`
 
-	//UserID int64
 	UserId   int64
 	Username string
 	Password string
@@ -37,13 +37,12 @@ func IsUserNameExisted(userName string) (err error) {
 	return err
 }
 
-func IsUserExisted(userName string, passWord string) (err error) {
-	var count int64
-	dbErr := db.Model(&User{}).Where("username = ? and password = ?", userName, passWord).Count(&count).Error
-	if dbErr != nil {
+func IsUserExisted(user *User) (err error) {
+	dbErr := db.Where("username = ? and password = ?", user.Username, user.Password).First(user).Error
+	if errors.Is(dbErr, gorm.ErrRecordNotFound) {
+		err = ErrorInvalidUser
+	} else if dbErr != nil {
 		err = ErrorMysql
-	} else if count == 0 {
-		err = ErrorInvalidPassword
 	}
 	return
 }

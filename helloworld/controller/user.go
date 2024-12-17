@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"test.com/helloworld/dao/mysql"
+	"test.com/helloworld/pkgs/token"
 	"test.com/helloworld/service"
 
 	"github.com/go-playground/validator/v10"
@@ -38,8 +39,8 @@ func UserSignUpHandler(c *gin.Context) {
 }
 
 func UserSignInHandler(c *gin.Context) {
-	var params models.ParamSignIn
-	if err := c.ShouldBindJSON(&params); err != nil {
+	var params = &models.ParamSignIn{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok {
 			ResponseErrorWithMsg(c, CodeInvalidParams, removeTopStruct(errs.Translate(trans)))
 		} else {
@@ -47,15 +48,21 @@ func UserSignInHandler(c *gin.Context) {
 		}
 		return
 	}
-	if err := service.UserSignIn(&params); err != nil {
+	var user = new(mysql.User)
+	if err := service.UserSignIn(params, user); err != nil {
 		zap.L().Error("failed in user signin: ", zap.Error(err))
-		if errors.Is(err, mysql.ErrorInvalidPassword) {
+		if errors.Is(err, mysql.ErrorInvalidUser) {
 			ResponseError(c, CodeUserNotExisted)
 		} else {
 			ResponseErrorWithMsg(c, CodeUnknownError, err.Error())
 		}
 		return
 	}
+	autoToken, err := token.GenerateJWT(user.UserId)
+	if err != nil {
+		zap.L().Error("failed in jwt: ", zap.Error(err))
+		return
+	}
 	zap.L().Info("success in user signin: %v", zap.Any("params", params))
-	ResponseSuccess(c, nil)
+	ResponseSuccess(c, autoToken)
 }

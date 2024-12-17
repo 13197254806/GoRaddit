@@ -2,8 +2,8 @@ package routes
 
 import (
 	"net/http"
-
 	"test.com/helloworld/controller"
+	"test.com/helloworld/middlewares"
 
 	"github.com/gin-gonic/gin"
 	"test.com/helloworld/logger"
@@ -25,6 +25,7 @@ func SetUp(mode string) (r *gin.Engine) {
 		})
 		r.POST("/signup", controller.UserSignUpHandler)
 		r.POST("/signin", controller.UserSignInHandler)
+		r.POST("/auth", middlewares.JWTAuthMiddleware(), controller.AuthHandler)
 	}
 	return
 }

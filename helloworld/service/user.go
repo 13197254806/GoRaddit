@@ -30,9 +30,9 @@ func UserSignUp(paramSignUp *models.ParamSignUp) (err error) {
 	return
 }
 
-func UserSignIn(paramSignIn *models.ParamSignIn) (err error) {
-	err = mysql.IsUserExisted(
-		paramSignIn.Username,
-		encryptPassword(paramSignIn.Password))
+func UserSignIn(paramSignIn *models.ParamSignIn, user *mysql.User) (err error) {
+	user.Username = paramSignIn.Username
+	user.Password = encryptPassword(paramSignIn.Password)
+	err = mysql.IsUserExisted(user)
 	return err
 }
